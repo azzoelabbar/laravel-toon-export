@@ -68,4 +68,3 @@ class ToonFormatter
         return implode("\n", $lines) . "\n";
     }
 }
-
