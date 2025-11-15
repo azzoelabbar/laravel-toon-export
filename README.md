@@ -332,5 +332,3 @@ The MIT License (MIT). Please see [License File](LICENSE) for more information.
 Built for the Laravel community, optimized for AI/LLM workflows.
 
 ---
-
-**Made with ❤️ for developers building AI-powered Laravel applications**
