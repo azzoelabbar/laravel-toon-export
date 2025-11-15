@@ -1,87 +1,18 @@
 # Laravel TOON Export
 
-A Laravel package that lets you export data (Eloquent models, queries, collections) into **TOON format** – optimized for LLM/token usage.
+[![Latest Version](https://img.shields.io/packagist/v/azzoelabbar/laravel-toon-export.svg?style=flat-square)](https://packagist.org/packages/azzoelabbar/laravel-toon-export)
+[![Total Downloads](https://img.shields.io/packagist/dt/azzoelabbar/laravel-toon-export.svg?style=flat-square)](https://packagist.org/packages/azzoelabbar/laravel-toon-export)
+[![License](https://img.shields.io/packagist/l/azzoelabbar/laravel-toon-export.svg?style=flat-square)](https://packagist.org/packages/azzoelabbar/laravel-toon-export)
+
+A Laravel package that exports data (Eloquent models, queries, collections) into **TOON format** – optimized for LLM/token usage.
 
 Think of it as: **`Export::toJSON` / `toCSV` → now also `toTOON`**
 
-## Installation
+## 🎯 Why TOON?
 
-### From Packagist (Recommended - Public Repo)
+TOON format is a compact, structured data format perfect for AI/LLM pipelines. It uses significantly fewer tokens than JSON while maintaining structure.
 
-If the package is published on Packagist:
-
-```bash
-composer require azzoelabbar/laravel-toon-export
-```
-
-### From Private GitHub Repository
-
-If the repository is **private**, you need to configure Composer authentication:
-
-#### 1. Create GitHub Personal Access Token
-
-1. Go to https://github.com/settings/tokens
-2. Generate new token (classic) with `repo` scope
-3. Copy the token
-
-#### 2. Configure Composer
-
-```bash
-composer config --global github-oauth.github.com YOUR_GITHUB_TOKEN
-```
-
-#### 3. Add VCS Repository
-
-In your `composer.json`:
-
-```json
-{
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/azzoelabbar/laravel-toon-export"
-    }
-  ],
-  "require": {
-    "azzoelabbar/laravel-toon-export": "@dev"
-  }
-}
-```
-
-#### 4. Install
-
-```bash
-composer require azzoelabbar/laravel-toon-export:@dev
-```
-
-### For Local Development
-
-If you're developing the package locally, you can use a path repository:
-
-```json
-{
-  "repositories": [
-    {
-      "type": "path",
-      "url": "./packages/egate/laravel-toon-export"
-    }
-  ],
-  "require": {
-    "azzoelabbar/laravel-toon-export": "@dev"
-  }
-}
-```
-
-Then run:
-```bash
-composer update azzoelabbar/laravel-toon-export
-```
-
-The package will auto-discover and register itself.
-
-## Why TOON?
-
-**Instead of bloated JSON:**
+**JSON (bloated):**
 ```json
 [
   { "id": 1, "name": "Panadol", "price": 3.5 },
@@ -89,16 +20,26 @@ The package will auto-discover and register itself.
 ]
 ```
 
-**You get compact TOON:**
+**TOON (compact):**
 ```
 products[2]{id,name,price}:
 1,Panadol,3.5
 2,Nizoral,18.9
 ```
 
-That's **easier on tokens** and still structured – perfect for AI pipelines!
+**Result:** ~70% fewer tokens, same information! 🚀
 
-## Quick Start
+## 📦 Installation
+
+Install via Composer:
+
+```bash
+composer require azzoelabbar/laravel-toon-export
+```
+
+The package will auto-discover and register itself. No configuration needed!
+
+## 🚀 Quick Start
 
 ```php
 use Egate\ToonExport\Facades\ToonExport;
@@ -122,26 +63,30 @@ $toon = ToonExport::fromQuery(
 // 3,Sara,sara@example.com
 ```
 
-## Usage
+## 📖 Usage
 
 ### Export from Collection
 
 ```php
+use Egate\ToonExport\Facades\ToonExport;
+
 $products = Product::all();
 $toon = ToonExport::fromCollection($products, 'products', ['id', 'name', 'price']);
 ```
 
-### Export from Query
+### Export from Query Builder
 
 ```php
 $toon = ToonExport::fromQuery(
-    Order::query()->where('status', 'completed'),
-    'orders',
-    ['id', 'user_id', 'total']
+    Order::query()
+        ->where('status', 'completed')
+        ->where('created_at', '>=', now()->subMonth()),
+    'recent_orders',
+    ['id', 'user_id', 'total', 'created_at']
 );
 ```
 
-### HTTP Response
+### HTTP Download Response
 
 ```php
 Route::get('/export/users.toon', function () {
@@ -160,12 +105,14 @@ Route::get('/export/users.toon', function () {
 Export models directly from the command line:
 
 ```bash
-# Export all users with selected columns
-php artisan toon:export "App\Models\User" \
-  --name=users \
-  --columns=id,name,email
+# Basic export
+php artisan toon:export "App\Models\User" --columns=id,name,email
 
-# Output: storage/app/toon/users.toon
+# Custom name and path
+php artisan toon:export "App\Models\Product" \
+  --name=products \
+  --columns=id,name,price \
+  --path=exports
 ```
 
 **Command Options:**
@@ -175,9 +122,8 @@ php artisan toon:export "App\Models\User" \
 - `--path`: Subdirectory under `storage/app` (default: `toon`)
 
 **Examples:**
-
 ```bash
-# Export with default name (uses model name)
+# Export with default name
 php artisan toon:export "App\Models\Product"
 # Creates: storage/app/toon/product.toon
 
@@ -193,7 +139,47 @@ php artisan toon:export "App\Models\Order" \
 # Creates: storage/app/exports/toon/recent_orders.toon
 ```
 
-## TOON Format
+## 🔧 Advanced Usage
+
+### Multiple Tables
+
+```php
+$users = ToonExport::fromCollection($users, 'users', ['id', 'name']);
+$orders = ToonExport::fromCollection($orders, 'orders', ['id', 'user_id', 'total']);
+
+$combined = $users . "\n\n" . $orders;
+```
+
+### Custom Data Arrays
+
+```php
+$data = [
+    ['id' => 1, 'name' => 'Item 1', 'price' => 10.5],
+    ['id' => 2, 'name' => 'Item 2', 'price' => 20.0],
+];
+
+$toon = ToonExport::fromCollection(
+    collect($data), 
+    'items', 
+    ['id', 'name', 'price']
+);
+```
+
+### AI/LLM Integration
+
+```php
+use Egate\ToonExport\Facades\ToonExport;
+
+// Export data for LLM processing
+$users = User::where('city', 'Benghazi')->get();
+$toon = ToonExport::fromCollection($users, 'users', ['id', 'name', 'email', 'city']);
+
+// Send to OpenAI/Anthropic
+$prompt = "Analyze this user data:\n\n{$toon}\n\nWhat patterns do you see?";
+// ... send to LLM API
+```
+
+## 📋 TOON Format Specification
 
 The TOON format follows this structure:
 
@@ -204,6 +190,12 @@ value1,value2,value3
 ...
 ```
 
+**Rules:**
+- Header: `name[count]{columns}:`
+- Data rows: comma-separated values, one per line
+- Values with commas/newlines are automatically quoted
+- Empty values are represented as empty strings
+
 **Example:**
 ```
 products[3]{id,name,price,stock}:
@@ -212,11 +204,133 @@ products[3]{id,name,price,stock}:
 3,Aspirin,2.0,
 ```
 
-## Requirements
+## ✅ Requirements
 
 - PHP ^8.1
 - Laravel ^10.0 || ^11.0 || ^12.0
 
-## License
+## 🎨 Features
 
-MIT
+- ✅ Export from Eloquent Collections
+- ✅ Export from Query Builders
+- ✅ Artisan command for CLI exports
+- ✅ Auto-discovery (no manual registration)
+- ✅ Token-efficient format for AI/LLM
+- ✅ Works with any Eloquent model
+- ✅ Supports custom columns selection
+- ✅ Automatic escaping for special characters
+
+## 🤝 Use Cases
+
+- **AI/LLM Pipelines:** Send structured data to OpenAI, Anthropic, etc.
+- **Data Exports:** Create compact export files
+- **API Responses:** Return token-efficient data formats
+- **Admin Dashboards:** Export data for analysis
+- **Batch Processing:** Prepare data for AI processing
+
+## 📝 Examples
+
+### Controller Example
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Egate\ToonExport\Facades\ToonExport;
+use App\Models\Product;
+
+class ExportController extends Controller
+{
+    public function products()
+    {
+        $products = Product::select('id', 'name', 'price', 'stock')->get();
+        
+        $toon = ToonExport::fromCollection($products, 'products', [
+            'id', 'name', 'price', 'stock'
+        ]);
+        
+        return response($toon, 200, [
+            'Content-Type' => 'text/plain; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="products.toon"',
+        ]);
+    }
+}
+```
+
+### Service Example
+
+```php
+<?php
+
+namespace App\Services;
+
+use Egate\ToonExport\Facades\ToonExport;
+use App\Models\User;
+
+class AIDataService
+{
+    public function prepareUserDataForLLM(array $userIds): string
+    {
+        $users = User::whereIn('id', $userIds)
+            ->select('id', 'name', 'email', 'created_at')
+            ->get();
+        
+        return ToonExport::fromCollection($users, 'users', [
+            'id', 'name', 'email', 'created_at'
+        ]);
+    }
+}
+```
+
+## 🔍 Testing
+
+Test the package with:
+
+```bash
+# Test Artisan command
+php artisan toon:export "App\Models\User" --columns=id,name,email
+
+# Test in Tinker
+php artisan tinker
+```
+
+Then:
+```php
+use Egate\ToonExport\Facades\ToonExport;
+use App\Models\User;
+
+$users = User::limit(3)->get();
+echo ToonExport::fromCollection($users, 'users', ['id', 'name', 'email']);
+```
+
+## 📚 Documentation
+
+- [GitHub Repository](https://github.com/azzoelabbar/laravel-toon-export)
+- [Packagist](https://packagist.org/packages/azzoelabbar/laravel-toon-export)
+
+## 🐛 Troubleshooting
+
+**Command not found?**
+```bash
+php artisan package:discover
+composer dump-autoload
+```
+
+**Class not found?**
+```bash
+composer dump-autoload
+php artisan config:clear
+```
+
+## 📄 License
+
+The MIT License (MIT). Please see [License File](LICENSE) for more information.
+
+## 🙏 Credits
+
+Built for the Laravel community, optimized for AI/LLM workflows.
+
+---
+
+**Made with ❤️ for developers building AI-powered Laravel applications**
