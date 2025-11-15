@@ -60,7 +60,7 @@ $toon = ToonExport::fromQuery(
 // users[3]{id,name,email}:
 // 1,Azzo,azzo@example.com
 // 2,Ali,ali@example.com
-// 3,Sara,sara@example.com
+// 3,Salah,salah@elabbar.com
 ```
 
 ## 📖 Usage
