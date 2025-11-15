@@ -1,0 +1,44 @@
+{
+  "name": "azzoelabbar/laravel-toon-export",
+  "description": "TOON exporters for Laravel (collections, models, queries).",
+  "type": "library",
+  "license": "MIT",
+  "keywords": [
+    "laravel",
+    "toon",
+    "export",
+    "llm",
+    "ai",
+    "eloquent"
+  ],
+  "authors": [
+    {
+      "name": "Azzo Elabbar",
+      "email": "azzoelabbar@example.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Egate\\ToonExport\\": "src/"
+    }
+  },
+  "require": {
+    "php": "^8.1",
+    "illuminate/support": "^10.0 || ^11.0 || ^12.0"
+  },
+  "require-dev": {
+    "orchestra/testbench": "^8.0 || ^9.0 || ^10.0"
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Egate\\ToonExport\\ToonExporterServiceProvider"
+      ],
+      "aliases": {
+        "ToonExport": "Egate\\ToonExport\\Facades\\ToonExport"
+      }
+    }
+  },
+  "prefer-stable": true
+}
+
