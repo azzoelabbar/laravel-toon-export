@@ -24,7 +24,10 @@ class ToonFormatter
 
         if ($columns === null) {
             $first = $rows[0];
-            $columns = array_keys(Arr::toArray($first));
+            $firstArray = is_object($first) && method_exists($first, 'toArray') 
+                ? $first->toArray() 
+                : (is_array($first) ? $first : (array) $first);
+            $columns = array_keys($firstArray);
         }
 
         $count = count($rows);
@@ -39,7 +42,10 @@ class ToonFormatter
         $lines = [$header];
 
         foreach ($rows as $row) {
-            $rowArray = Arr::only(Arr::toArray($row), $columns);
+            $rowArray = is_object($row) && method_exists($row, 'toArray') 
+                ? $row->toArray() 
+                : (is_array($row) ? $row : (array) $row);
+            $rowArray = Arr::only($rowArray, $columns);
 
             $escaped = array_map(function ($value) {
                 if ($value === null) {
