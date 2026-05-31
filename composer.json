@@ -1,0 +1,43 @@
+{
+  "name": "azzoelabbar/laravel-toon-export",
+  "description": "Hashed TOON exporters for Laravel (collections, models, queries).",
+  "type": "library",
+  "license": "MIT",
+  "keywords": [
+    "laravel",
+    "toon",
+    "export",
+    "llm",
+    "ai",
+    "eloquent"
+  ],
+  "authors": [
+    {
+      "name": "Hashed"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Hashed\\ToonExport\\": "src/"
+    }
+  },
+  "require": {
+    "php": "^8.1",
+    "illuminate/support": "^10.0 || ^11.0 || ^12.0"
+  },
+  "require-dev": {
+    "orchestra/testbench": "^8.0 || ^9.0 || ^10.0"
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Hashed\\ToonExport\\ToonExporterServiceProvider"
+      ],
+      "aliases": {
+        "ToonExport": "Hashed\\ToonExport\\Facades\\ToonExport"
+      }
+    }
+  },
+  "prefer-stable": true
+}
+
